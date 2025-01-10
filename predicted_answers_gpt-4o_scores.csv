@@ -1,0 +1,4 @@
+File Name,Correct Answers,Predicted Correct Answers,Score
+./data/data_BDA.json,40,36,36
+./data/data_exq.json,40,36,36
+./data/data_hf.json,49,30,30
