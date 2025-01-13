@@ -1,56 +1,62 @@
 import os
 import random
-import argparse
 import torch
 import numpy as np
+import pandas as pd
 from datasets import Dataset, concatenate_datasets
+from tqdm import tqdm
 from transformers import DataCollatorForSeq2Seq
-from trl import SFTTrainer
 from unsloth import FastLanguageModel, is_bfloat16_supported, UnslothTrainingArguments
+from trl import SFTTrainer
 
-# JSON 데이터 전처리 함수
-def format_choice_question(example):
-    choices_text = "\n".join(
-        [f"{idx + 1}. {choice}" for idx, choice in enumerate(example["choices"])]
-    )
-    return {
-        "text": f"Question: {example['question']}\nChoices:\n{choices_text}\nAnswer: {example['answer']}"
-    }
-
-# IT_LOCAL_DATA 정의
+# 데이터셋 경로
 IT_LOCAL_DATA = [
-    ("./data/sample_choice_questions.json", (format_choice_question,))
+    "./data/sft_data/translated_Hanhhanh9_QA-AI.csv",
+    "./data/sft_data/translated_Harikrishnan46624_AI_QA_Data.csv",
+    "./data/sft_data/translated_mjphayes_machine_learning_questions.csv",
+    "./data/sft_data/translated_prsdm_Machine-Learning-QA-dataset.csv",
+    "./data/sft_data/translated_team-bay_data-science-qa.csv",
+    "./data/sft_data/translated_whiteOUO_Ladder-machine-learning-QA.csv"
 ]
 
-def parse_args():
-    parser = argparse.ArgumentParser()
+# 전처리 함수
+def preprocess_question_answer(example):
+    return {"text": f"질문: {example['Question']}\n답변: {example['Answer']}"}
 
-    # 모델 설정
-    parser.add_argument("--model", default="unsloth/Qwen2.5-7B-Instruct", type=str)
-    parser.add_argument("--seed", default=42, type=int)
-    parser.add_argument("--max_token_length", default=2048, type=int)
-    parser.add_argument("--use_cache", action='store_true')
+# 데이터 로드 및 전처리
+def load_and_preprocess_datasets(dataset_paths, preprocess_fn):
+    dataset = Dataset.from_dict({})
+    for path in dataset_paths:
+        raw_dataset = Dataset.from_pandas(pd.read_csv(path))
+        raw_dataset = raw_dataset.map(preprocess_fn, remove_columns=raw_dataset.column_names)
+        dataset = concatenate_datasets([dataset, raw_dataset])
+    return dataset
 
-    # LoRA 설정
-    parser.add_argument("--lora_r", default=64, type=int)
-    parser.add_argument("--lora_alpha", default=32, type=int)
-    parser.add_argument("--lora_dropout", default=0.0, type=float)
-    parser.add_argument("--lora_target_modules", default="q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj", type=str)
-    parser.add_argument("--use_rslora", action="store_true")
+# Argument 설정
+class Args:
+    model = "unsloth/Qwen2.5-7B-Instruct"
+    seed = 42
+    max_token_length = 2048
+    use_cache = True
 
-    # 학습 설정
-    parser.add_argument("--epochs", default=1, type=int)
-    parser.add_argument("--batch_size", default=4, type=int)
-    parser.add_argument("--lr", default=1e-4, type=float)
-    parser.add_argument("--lr_scheduler", default="linear", type=str)
-    parser.add_argument("--lr_warmup_ratio", default=0.06, type=float)
-    parser.add_argument("--weight_decay", default=1e-2, type=float)
-    parser.add_argument("--max_grad_norm", default=1.0, type=float)
-    parser.add_argument("--use_gradient_checkpointing", action='store_true')
+    lora_r = 64
+    lora_alpha = 32
+    lora_dropout = 0.0
+    lora_target_modules = "q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj"
+    use_rslora = False
 
-    args = parser.parse_args()
-    return args
+    epochs = 1
+    batch_size = 4
+    lr = 1e-4
+    lr_scheduler = "linear"
+    lr_warmup_ratio = 0.06
+    weight_decay = 1e-2
+    max_grad_norm = 1.0
+    use_gradient_checkpointing = True
 
+args = Args()
+
+# Seed 설정
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -58,14 +64,12 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
+# 실행 메인 함수
 if __name__ == "__main__":
-    # 인자 파싱
-    args = parse_args()
-
-    # 시드 설정
+    # Seed 설정
     set_seed(args.seed)
 
-    # 모델과 토크나이저 로드
+    # 모델 및 토크나이저 로드
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=args.model,
         dtype=None,
@@ -91,29 +95,19 @@ if __name__ == "__main__":
         loftq_config=None
     )
 
-    # 데이터 로드 및 처리
-    dataset = Dataset.from_dict({})
-    for path, preprocess_fns in IT_LOCAL_DATA:
-        with open(path, "r") as f:
-            data = json.load(f)
-        raw_dataset = Dataset.from_dict(data)
-        for preprocess_fn in preprocess_fns:
-            preprocessed_dataset = raw_dataset.map(preprocess_fn, remove_columns=raw_dataset.column_names)
-            dataset = concatenate_datasets([dataset, preprocessed_dataset])
-
-    # 데이터셋 분리
+    # 데이터 로드 및 전처리
+    dataset = load_and_preprocess_datasets(IT_LOCAL_DATA, preprocess_question_answer)
     test_size = len(dataset) % args.batch_size if len(dataset) % args.batch_size != 0 else args.batch_size
     dataset = dataset.train_test_split(test_size=test_size, shuffle=True, seed=args.seed)
-
     train_dataset = dataset["train"].shuffle()
     val_dataset = dataset["test"].shuffle()
 
-    # 데이터 Collator 설정
+    # Data Collator 설정
     data_collator = DataCollatorForSeq2Seq(
         tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
     )
 
-    # 학습 설정
+    # 학습 Argument 설정
     training_args = UnslothTrainingArguments(
         per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
@@ -132,11 +126,11 @@ if __name__ == "__main__":
         eval_steps=100,
         save_strategy="epoch",
         seed=args.seed,
-        output_dir="./adapters/it-lora",
+        output_dir="./adapters/qa-lora",
         report_to="wandb"
     )
 
-    # Trainer 설정
+    # Trainer 설정 및 학습
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -147,6 +141,4 @@ if __name__ == "__main__":
         data_collator=data_collator,
         args=training_args
     )
-
-    # 학습 시작
     trainer.train()
