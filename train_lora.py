@@ -4,7 +4,6 @@ import torch
 import numpy as np
 import pandas as pd
 from datasets import Dataset, concatenate_datasets
-from tqdm import tqdm
 from transformers import DataCollatorForSeq2Seq
 from unsloth import FastLanguageModel, is_bfloat16_supported, UnslothTrainingArguments
 from trl import SFTTrainer
@@ -19,7 +18,7 @@ IT_LOCAL_DATA = [
     "./data/sft_data/translated_whiteOUO_Ladder-machine-learning-QA.csv"
 ]
 
-# 전처리 함수
+# 전처리 함수: Question과 Answer를 결합하여 text 생성
 def preprocess_question_answer(example):
     return {"text": f"질문: {example['Question']}\n답변: {example['Answer']}"}
 
@@ -28,7 +27,11 @@ def load_and_preprocess_datasets(dataset_paths, preprocess_fn):
     dataset = Dataset.from_dict({})
     for path in dataset_paths:
         raw_dataset = Dataset.from_pandas(pd.read_csv(path))
+        
+        # Question, Answer에서 text 필드 생성
         raw_dataset = raw_dataset.map(preprocess_fn, remove_columns=raw_dataset.column_names)
+        
+        # 기존 데이터셋과 병합
         dataset = concatenate_datasets([dataset, raw_dataset])
     return dataset
 
