@@ -14,10 +14,13 @@
 (모델 추가 예정)
 | Leaderboard Rank |          Model Name          | Submitter Name | Total Score | Hugging Face(49) | 기출문제(40) | 빅데이터 분석기사(일부)(40) |
 |:----------------:|:----------------------------:|:--------------:|:-----------:|:------------:|:--------:|:----------------------:|
-|         1st        |       gpt-4o	            |      OpenAI     |     102    |      30      |     35   |          36            |
-|         2nd        |       o1-preview	             |      OpenAI       |     91    |      23      |     34   |          34            |
-|         2nd        |       gpt-4	             |      OpenAI       |     91    |      20      |     35   |          36            |
-|         3rd        |       gpt-3.5-turbo            |      OpenAI     |     65    |      15      |     27   |          23            |
+|         1st        |       claude-3-5-sonnet-20241022	            |      Antropic     |     104    |      33      |     35   |          36            |
+|         2nd        |       gpt-4o	            |      OpenAI     |     102    |      30      |     36   |          36            |
+|         3rd        |       claude-3-opus-20240229	            |      Antropic     |     94    |      27      |     32   |          35            |
+|         4th        |       o1-preview	             |      OpenAI       |     91    |      23      |     34   |          34            |
+|         4th        |       gpt-4	             |      OpenAI       |     91    |      20      |     35   |          36            |
+|         4th        |       claude-3-5-haiku-20241022	             |      Antropic       |     91    |      25      |     33   |          33            |
+|         5th        |       gpt-3.5-turbo            |      OpenAI     |     65    |      15      |     27   |          23            |
                     
 
 ## 📚 Benchmark 데이터셋
