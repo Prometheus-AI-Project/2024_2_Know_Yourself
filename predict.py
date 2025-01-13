@@ -5,7 +5,7 @@ import os, csv
 import asyncio
 
 
-def get_model_prediction(client, question_data, model="gpt-4o"):
+"""def get_model_prediction(client, question_data, model="gpt-4o"):
     try:
         # Send the question data to the OpenAI API
         completion = client.chat.completions.create(
@@ -17,6 +17,29 @@ def get_model_prediction(client, question_data, model="gpt-4o"):
         )
 
         # Extract and return the user's choice
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"An error occurred while getting the prediction for model {model}: {e}")
+        return None"""
+
+def get_model_prediction(client, question_data, model="o1-preview"):
+    try:
+        # 시스템 메시지 내용을 user 메시지에 포함하여 하나의 메시지로 구성합니다.
+        prompt = (
+            "당신은 머신러닝 전문가입니다. 간단한 설명과 함께 선택지에서 '답:'의 형식으로 답변을 고르시오.\n\n"
+            f"Question: {question_data['question']}\n"
+            f"Choices: {', '.join(question_data['choices'])}\n"
+        )
+
+        # o1-preview 모델은 system 역할을 지원하지 않으므로, user 메시지만 사용합니다.
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Extract and return the model's answer.
         return completion.choices[0].message.content.strip()
     except Exception as e:
         print(f"An error occurred while getting the prediction for model {model}: {e}")
@@ -67,8 +90,11 @@ api_key = os.getenv("OPENAI_API_KEY")
 if api_key:
     client = OpenAI()  # Initialize the OpenAI client
     json_files = ["./data/data_BDA.json", "./data/data_exq.json", "./data/data_hf.json"]  # List of JSON files
-    output_file = "responses.csv"  # Output CSV file
-    models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]  # List of model names to use
+    #output_file = "responses.csv"  # Output CSV file
+    #models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]  # List of model names to use
+
+    output_file = "responses_o1-preview.csv"  # Output CSV file
+    models = ["o1-preview"]  # List of model names to use
 
     # Run the async process
     process_and_save_responses(client, json_files, output_file, models)
