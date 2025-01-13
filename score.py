@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from collections import defaultdict
 
-def get_user_choice(client, answer, choices, model="gpt-4o"):
+"""def get_user_choice(client, answer, choices, model="gpt-4o"):
     try:
         # Send the answer and choices to the OpenAI API
         completion = client.chat.completions.create(
@@ -21,7 +21,35 @@ def get_user_choice(client, answer, choices, model="gpt-4o"):
         return completion.choices[0].message.content.strip()
     except Exception as e:
         print(f"An error occurred while getting the prediction: {e}")
-        return "0"  # Default to 0 if an error occurs
+        return "0"  # Default to 0 if an error occurs"""
+
+
+def get_user_choice(client, answer, choices, model="o1-preview"):
+    try:
+        # 전체 지시문과 예시를 하나의 user 메시지로 구성합니다.
+        prompt = (
+            "당신은 시험을 채점하는 채점관입니다. 학생의 대답을 보고, 학생이 몇 번을 선택하였는지 구분하세요. "
+            "학생이 선택한 답변을 숫자로만 반환하세요. 만약 학생이 답변을 하지 못했다면 0을 반환하세요.\n\n"
+            "예시:\n"
+            "Choices : ['프로메테우스', '제우스', '아테네', '비너스']\n"
+            "학생의 Answer: '답: 프로메테우스'\n"
+            "채점 결과(숫자): 1\n\n"
+            "실제 학생의 답변을 참고하여 선택지 번호를 숫자만으로 반환하세요. (예: 2번 -> 2)\n"
+            f"Choices : {choices}\n"
+            f"Answer: {answer}\n"
+        )
+
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"An error occurred while getting the prediction: {e}")
+        return "0"  
+    
 
 def process_and_calculate_scores(input_file, output_file_prefix, score_file, client, models):
     # Step 1: Group rows by model name
@@ -103,12 +131,17 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 if api_key:
     client = OpenAI()  # Initialize the OpenAI client
-    input_file = "responses.csv"  # Input file containing model responses and answers
-    output_file_prefix = "predicted_answers"  # Prefix for the predicted answers output file
-    score_file = "aggregate_scores.csv"  # File to save aggregate scores
+    #input_file = "responses.csv"  # Input file containing model responses and answers
+    input_file = "responses_o1-preview.csv"  # Input file containing model responses and answers
+    #output_file_prefix = "predicted_answers"  # Prefix for the predicted answers output file
+    output_file_prefix = "predicted_answers_o1-preview"  # Prefix for the predicted answers output file
+    #score_file = "aggregate_scores.csv"  # File to save aggregate scores
+    score_file = "aggregate_scores_o1-preview.csv"  # File to save aggregate scores
+
 
     # List of models to experiment with
-    models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
+    #models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
+    models = ["o1-preview"]
 
     # Process predictions and calculate scores for multiple models
     process_and_calculate_scores(input_file, output_file_prefix, score_file, client, models)
