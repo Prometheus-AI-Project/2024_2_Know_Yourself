@@ -7,10 +7,10 @@ const mainLayout = (content) => `
       <div>
         <div class="profile">
           <img src="assets/profile.png" alt="Profile Picture">
-          <h3>별명: ${localStorage.getItem("user") || "Guest"}</h3>
+          <h3>${localStorage.getItem("user") || "Guest"}</h3>
         </div>
         <ul>
-          <li onclick="navigateContent('login')">Login</li>
+          <li onclick="logout()">Logout</li>
           <li onclick="navigateContent('test')">Test</li>
           <li onclick="navigateContent('answer')">Answer</li>
           <li onclick="navigateContent('ranking')">Ranking</li>
@@ -52,6 +52,7 @@ const pages = {
           <input type="password" id="password" placeholder="Password" required>
           <button type="submit">Create Account</button>
         </form>
+        <br/>
         <button id="start-button" onclick="navigate('test')">시작하기</button>
       </div>
     </div>
@@ -131,5 +132,10 @@ function loadQuestions() {
   window.questions = questions;
 }
 
+//로그아웃 페이지
+function logout() {
+  localStorage.removeItem("user");
+  navigate("welcome");
+}
 // 초기 페이지 로드
 navigate("welcome");
