@@ -1,0 +1,4 @@
+File Name,Total Questions,Correct Predictions,Accuracy
+./data/data_BDA.json,40,35,87.5%
+./data/data_exq.json,40,36,90.0%
+./data/data_hf.json,49,32,65.31%
