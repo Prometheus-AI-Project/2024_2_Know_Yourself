@@ -53,7 +53,7 @@ def get_model_prediction_claude(client, question_data, prompt, model="claude-3-5
         # Claude API를 사용하여 응답 받기
         message = client.messages.create(
             model=model,
-            max_tokens=500,
+            max_tokens=800,
             temperature=0.7,
             system=prompt,
             messages=[
