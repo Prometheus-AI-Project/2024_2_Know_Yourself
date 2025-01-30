@@ -2,9 +2,10 @@ from openai import OpenAI
 import csv
 from dotenv import load_dotenv
 import os
+import argparse
 from collections import defaultdict
 
-"""def get_user_choice(client, answer, choices, model="gpt-4o"):
+def get_user_choice_gpt(client, answer, choices, model="gpt-4o"):
     try:
         # Send the answer and choices to the OpenAI API
         completion = client.chat.completions.create(
@@ -21,10 +22,10 @@ from collections import defaultdict
         return completion.choices[0].message.content.strip()
     except Exception as e:
         print(f"An error occurred while getting the prediction: {e}")
-        return "0"  # Default to 0 if an error occurs"""
+        return "0"  # Default to 0 if an error occurs
 
 
-def get_user_choice(client, answer, choices, model="o1-preview"):
+def get_user_choice_o1_preview(client, answer, choices, model="o1-preview"):
     try:
         # 전체 지시문과 예시를 하나의 user 메시지로 구성합니다.
         prompt = (
@@ -51,100 +52,116 @@ def get_user_choice(client, answer, choices, model="o1-preview"):
         return "0"  
     
 
-def process_and_calculate_scores(input_file, output_file_prefix, score_file, client, models):
-    # Step 1: Group rows by model name
-    model_data = defaultdict(list)
-
+def process_and_calculate_scores(input_file, output_file_prefix, score_file, client, model):
+    model_dispatch = {
+        "gpt-4o": get_user_choice_gpt,
+        "gpt-4": get_user_choice_gpt,
+        "gpt-3.5-turbo": get_user_choice_gpt,
+        "o1-preview": get_user_choice_o1_preview,
+    }
+    # 선택한 모델에 맞는 함수 가져오기
+    get_user_choice_func = model_dispatch.get(model)
+    if not get_user_choice_func:
+        print(f"Unsupported model: {model}. Skipping processing.")
+        return
+    
+    # Step 1: Read the input file
     with open(input_file, "r", encoding="utf-8") as infile:
         reader = csv.reader(infile)
         header = next(reader)  # Read header row
+        data_rows = list(reader)  # Store all rows (all from the same model)
 
-        for row in reader:
-            model_name = row[0]  # Assume "Model Name" is the first column
-            model_data[model_name].append(row)
+    if not data_rows:
+        print(f"No data found in {input_file}. Skipping processing.")
+        return
 
-    # Step 2: Process each model's data
-    aggregate_results = []
+    print(f"Processing model: {model}")
 
-    for model in models:
-        if model not in model_data:
-            print(f"No data found for model: {model}")
-            continue
+    output_file = f"{output_file_prefix}.csv"
+    score_output_file = f"{output_file_prefix}_scores.csv"
 
-        print(f"Processing model: {model}")
-        rows_with_predictions = []
+    # Step 2: Generate predictions and save to file
+    with open(output_file, "w", newline="", encoding="utf-8") as outfile, \
+         open(score_output_file, "w", newline="", encoding="utf-8") as scorefile:
 
-        # Create a new output file for the current model
-        with open(f"{output_file_prefix}_{model}.csv", "w", newline="", encoding="utf-8") as outfile:
-            writer = csv.writer(outfile)
-            writer.writerow(header + ["Predicted Answer"])  # Write new header
+        writer = csv.writer(outfile)
+        score_writer = csv.writer(scorefile)
 
-            for row in model_data[model]:
-                question = row[2]
-                choices = row[3].split(", ")  # Assuming choices are comma-separated
-                model_response = row[4]
-                correct_answer = row[5]
+        writer.writerow(header + ["Predicted Answer"])  # Write new header
+        score_writer.writerow(["File Name", "Total Questions", "Correct Predictions", "Accuracy"])
 
-                # Get the predicted choice from the model response
-                predicted_answer = get_user_choice(client, model_response, choices, model=model)
-                row.append(predicted_answer)  # Append predicted answer
-                rows_with_predictions.append(row)  # Collect row for scoring
-                writer.writerow(row)
+        file_scores = {}
 
-        # Step 3: Calculate scores for the current model
-        total_score = 0
-        with open(f"{output_file_prefix}_{model}_scores.csv", "w", newline="", encoding="utf-8") as scorefile:
-            score_writer = csv.writer(scorefile)
-            score_writer.writerow(["File Name", "Correct Answers", "Predicted Correct Answers", "Score"])
+        for row in data_rows:
+            file_name = row[1]
+            question = row[2]
+            choices = row[3].split("\n")  # Ensure choices are correctly split
+            model_response = row[4]
+            correct_answer = row[5]
 
-            file_scores = defaultdict(lambda: {"correct": 0, "predicted": 0, "score": 0})
+            # Get the predicted choice from the model response
+            predicted_answer = get_user_choice_func(client, model_response, choices, model=model)
+            predicted_answer = predicted_answer or "N/A"  # Handle None case
 
-            for row in rows_with_predictions:
-                file_name = row[1]
-                correct_answer = row[5]
-                predicted_answer = row[6]
+            row.append(predicted_answer)  # Append predicted answer
+            writer.writerow(row)  # Write row to output file
+            print(row)
 
-                # Check if the prediction matches the correct answer
-                is_correct = 1 if correct_answer == predicted_answer else 0
-                total_score += is_correct
+            # Score calculation
+            if file_name not in file_scores:
+                file_scores[file_name] = {"total": 0, "correct": 0}
 
-                file_scores[file_name]["correct"] += 1
-                file_scores[file_name]["predicted"] += is_correct
-                file_scores[file_name]["score"] += is_correct
+            file_scores[file_name]["total"] += 1
+            file_scores[file_name]["correct"] += (1 if correct_answer == predicted_answer else 0)
 
-            for file_name, stats in file_scores.items():
-                score_writer.writerow([file_name, stats["correct"], stats["predicted"], stats["score"]])
-
-        # Add aggregate score for this model
-        aggregate_results.append([model, total_score])
+        # Step 3: Save scores per file
+        for file_name, stats in file_scores.items():
+            accuracy = round(stats["correct"] / stats["total"] * 100, 2) if stats["total"] > 0 else 0
+            score_writer.writerow([file_name, stats["total"], stats["correct"], f"{accuracy}%"])
 
     # Step 4: Write aggregate scores
+    total_questions = sum(stats["total"] for stats in file_scores.values())
+    total_correct = sum(stats["correct"] for stats in file_scores.values())
+    accuracy = round((total_correct / total_questions) * 100, 2) if total_questions > 0 else 0
+
     with open(score_file, "w", newline="", encoding="utf-8") as aggregate_file:
         aggregate_writer = csv.writer(aggregate_file)
-        aggregate_writer.writerow(["Model", "Total Score"])
-        aggregate_writer.writerows(aggregate_results)
+        aggregate_writer.writerow(["Model", "Total Questions", "Correct Predictions", "Accuracy"])
+        aggregate_writer.writerow([model, total_questions, total_correct, f"{accuracy}%"])
+
+    print(f"Finished processing {model}. Results saved in {score_output_file} and {score_file}.")
 
 
-# Load API key from .env file
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
 
-if api_key:
-    client = OpenAI()  # Initialize the OpenAI client
-    #input_file = "responses.csv"  # Input file containing model responses and answers
-    input_file = "responses_o1-preview.csv"  # Input file containing model responses and answers
-    #output_file_prefix = "predicted_answers"  # Prefix for the predicted answers output file
-    output_file_prefix = "predicted_answers_o1-preview"  # Prefix for the predicted answers output file
-    #score_file = "aggregate_scores.csv"  # File to save aggregate scores
-    score_file = "aggregate_scores_o1-preview.csv"  # File to save aggregate scores
+def main():
+    # 명령줄 인자 파서 설정
+    parser = argparse.ArgumentParser(description="Run OpenAI API scoring process with a specified model.")
+    parser.add_argument("--model", type=str, required=True, choices=["gpt-4o", "gpt-4", "gpt-3.5-turbo", "o1-preview"],
+                        help="Specify the OpenAI model to use.")
+    parser.add_argument("--prompt", type=str, required=True, help="Specify the prompt type to use.")
+    args = parser.parse_args()
 
+    # Load API key from .env file
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
 
-    # List of models to experiment with
-    #models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
-    models = ["o1-preview"]
+    if not api_key:
+        print("API key not found. Please set it in the .env file.")
+        return
 
-    # Process predictions and calculate scores for multiple models
-    process_and_calculate_scores(input_file, output_file_prefix, score_file, client, models)
+    client = OpenAI()  # Initialize OpenAI client
+
+    model = args.model  # 명령줄에서 입력받은 모델명
+    prompt = args.prompt
+
+    # 모델명에 따라 파일명 자동 생성
+    input_file = f"./responses/responses_{model}_{prompt}.csv"
+    output_file_prefix = f"./predicted_answers/predicted_answers_{model}"
+    score_file = f"./scores/aggregate_scores_{model}.csv"
+
+    # Process predictions and calculate scores
+    process_and_calculate_scores(input_file, output_file_prefix, score_file, client, model)
     print(f"Aggregate scores saved to {score_file}")
-else:
-    print("API key not found. Please set it in the .env file.")
+
+if __name__ == "__main__":
+    main()
