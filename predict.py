@@ -1,3 +1,4 @@
+import anthropic
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
@@ -47,19 +48,40 @@ def get_model_prediction_o1_preview(client, question_data, prompt, model="o1-pre
         print(f"An error occurred while getting the prediction for model {model}: {e}")
         return None
 
-# 1. claude 함수 추가
-# def get_model_prediction_claude
-
+def get_model_prediction_claude(client, question_data, prompt, model="claude-3-5-sonnet-20241022"):
+    try:
+        # Claude API를 사용하여 응답 받기
+        message = client.messages.create(
+            model=model,
+            max_tokens=500,
+            temperature=0.7,
+            system=prompt,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"Question: {question_data['question']}\nChoices: {', '.join(question_data['choices'])}\n"
+                        }
+                    ],
+                }
+            ]
+        )
+        return message.content[0].text
+    except ValueError:
+        return 0
 
 
 def process_and_save_responses(client, json_files, output_file, model_name, selected_prompt):
-    # 2. claude 모델 이름 추가 
-    # "claude" : get_model_prediction_claude
     model_dispatch = {
         "gpt-4o": get_model_prediction_gpt,
         "gpt-4": get_model_prediction_gpt,
         "gpt-3.5-turbo": get_model_prediction_gpt,
         "o1-preview": get_model_prediction_o1_preview,
+        "claude-3-5-haiku-20241022": get_model_prediction_claude,
+        "claude-3-5-sonnet-20241022": get_model_prediction_claude,
+        "claude-3-opus-20240229": get_model_prediction_claude
     }
 
     with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
@@ -93,8 +115,7 @@ def process_and_save_responses(client, json_files, output_file, model_name, sele
 def main():
     """ Main function to process the experiment setup. """
     parser = argparse.ArgumentParser(description="Run OpenAI API requests with a specific model and prompt.")
-    # 3. choice에 클로드 모델 추가 
-    parser.add_argument("--model", type=str, required=True, choices=["gpt-4o", "gpt-4", "gpt-3.5-turbo", "o1-preview"],
+    parser.add_argument("--model", type=str, required=True, choices=["gpt-4o", "gpt-4", "gpt-3.5-turbo", "o1-preview","claude-3-5-haiku-20241022","claude-3-5-sonnet-20241022","claude-3-opus-20240229"],
                         help="Specify the model to use.")
     parser.add_argument("--prompt", type=str, required=True, help="Specify the prompt type to use.")
 
@@ -102,7 +123,7 @@ def main():
 
     load_dotenv()
     open_api_key = os.getenv("OPENAI_API_KEY")
-    # 4. api 키 추가 -> 키 두 개 불러와도 상관없겠지?
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
     
     # 하단 코드 너무 대충짜서 보고 조금 수정해도 돼요!
     if args.model in ["gpt-4o", "gpt-4", "gpt-3.5-turbo", "o1-preview"] :
@@ -126,8 +147,25 @@ def main():
         else:
             print("API key not found. Please set it in the .env file.")
             
-    # 5. 클로드인 경우 
-    # if args. model in []
+    if args. model in ["claude-3-5-haiku-20241022","claude-3-5-sonnet-20241022","claude-3-opus-20240229"]:
+        if anthropic_api_key:
+            client = anthropic.Anthropic(api_key=anthropic_api_key)
+            json_files = ["./data/data_BDA.json", "./data/data_exq.json", "./data/data_hf.json"]
+
+            selected_prompt = get_prompt(args.prompt)
+
+            if selected_prompt is None:
+                print(f"Error: Prompt '{args.prompt}' not found.")
+                return
+
+            output_file = f"./responses/responses_{args.model}_{args.prompt}.csv"
+
+            process_and_save_responses(client, json_files, output_file, args.model, selected_prompt)
+            print(f"Responses saved to {output_file}")
+
+        else:
+            print("API key not found. Please set it in the .env file.")    
+            
 
 if __name__ == "__main__":
     main()
