@@ -156,8 +156,8 @@ def main():
 
     # 모델명에 따라 파일명 자동 생성
     input_file = f"./responses/responses_{model}_{prompt}.csv"
-    output_file_prefix = f"./predicted_answers/predicted_answers_{model}"
-    score_file = f"./scores/aggregate_scores_{model}.csv"
+    output_file_prefix = f"./predicted_answers/predicted_answers_{model}_{prompt}"
+    score_file = f"./scores/aggregate_scores_{model}_{prompt}.csv"
 
     # Process predictions and calculate scores
     process_and_calculate_scores(input_file, output_file_prefix, score_file, client, model)
