@@ -52,18 +52,6 @@ img {
   height: 100vh;
 }
 
-.sidebar .profile {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.sidebar .profile img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-}
-
 .sidebar ul {
   list-style: none;
   padding: 0;
@@ -72,9 +60,10 @@ img {
 .sidebar ul li {
   margin: 10px 0;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   color: #333;
   text-align: center;
+  padding: 10px;
 }
 
 .sidebar ul li:hover {
@@ -86,8 +75,46 @@ img {
   text-align: center;
 }
 
+.menu-item {
+  display: flex;        /* 가로로 나란히 배치 */
+  justify-content: center; /* 센터로 배치 */
+  text-align: center;
+  font-size: 18px;
+  color: #333;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+/* 아이콘 공통 스타일 */
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+/* 프로필 영역 */
+.profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+
+}
+
+.profile-img {
+  width: 70px;
+  height: 60px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.profile-name {
+  font-size: 20px;
+  color: #333;
+}
+
 .sidebar .logo img {
-  width: 70%;
+  width: 50%;
   height: auto;
   margin-top: 20px;
   padding: 50px;
