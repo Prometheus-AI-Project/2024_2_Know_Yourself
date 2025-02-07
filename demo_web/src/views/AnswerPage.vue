@@ -1,21 +1,16 @@
 <template>
   <div class="answer-wrapper">
-    <!-- 상단에 '해설'이라는 큰 제목 -->
     <h1 class="title">Score</h1>
-
-    <!-- 간단한 점수 안내 -->
     <div class="score-info">
       총 {{ quizResult.total }}문제 중 {{ quizResult.correctCount }}개 정답
       <span v-if="quizResult.total > 0">
         (정답률: {{ percentage }}%)
       </span>
     </div>
+    <h2 class="sub-title">틀린 문제 해설</h2>
 
-    <!-- 틀린 문제가 있는 경우 -->
+    <!-- 틀린 문제 해설 + GPT/Claude 라디오 선택 -->
     <div v-if="quizResult.incorrectList.length > 0" class="answer-container">
-      <h2 class="sub-title">틀린 문제 해설</h2>
-
-      <!-- 틀린 문제 목록 -->
       <div
         v-for="(item, idx) in quizResult.incorrectList"
         :key="idx"
@@ -26,7 +21,6 @@
         <p><strong>내 답:</strong> {{ item.selected || '미선택' }}</p>
         <p><strong>정답:</strong> {{ item.correct }}</p>
 
-        <!-- 두 가지 해설(GPT, Claude) -->
         <div class="explanations">
           <div class="explanation-box">
             <h4>GPT 해설</h4>
@@ -38,7 +32,7 @@
           </div>
         </div>
 
-        <!-- 해설 선호도 선택(라디오 버튼) -->
+        <!-- 선호도 라디오 버튼 -->
         <div class="radio-group">
           <label>
             <input
@@ -59,20 +53,20 @@
             Claude 해설이 더 좋다
           </label>
         </div>
-
-        <!-- 구분선 -->
         <hr />
       </div>
-
-      <!-- 해설 선호 선택 완료 버튼 -->
       <div class="submit-area">
         <button @click="submitPreferences">해설 선호 선택 완료</button>
       </div>
     </div>
 
-    <!-- 틀린 문제 없는 경우(모든 문제 정답) -->
+    <!-- 틀린 문제 없으면 -->
     <div v-else class="all-correct">
       <p>모든 문제를 맞추셨네요! 축하드립니다!</p>
+    </div>
+
+    <div v-if="showCompletedMessage" class="completion-message">
+      해설 선호 선택이 완료되었습니다!
     </div>
   </div>
 </template>
@@ -81,7 +75,6 @@
 export default {
   name: 'AnswerPage',
   props: {
-    // MainLayout에서 :quizResult="quizResult" 형태로 전달
     quizResult: {
       type: Object,
       required: true
@@ -89,12 +82,10 @@ export default {
   },
   data() {
     return {
-      // 각 틀린 문제별로 'gpt' 또는 'claude'를 저장할 배열
-      userPreferredExplanations: []
+      userPreferredExplanations: [] 
     }
   },
   computed: {
-    // 정답률(%) 계산
     percentage() {
       if (this.quizResult.total === 0) return 0
       return Math.round(
@@ -103,15 +94,43 @@ export default {
     }
   },
   created() {
-    // 틀린 문제 개수만큼 null로 초기화
+    // 틀린 문제 수만큼 라디오 버튼 선택값을 null로 초기화
     const numIncorrect = this.quizResult.incorrectList.length
     this.userPreferredExplanations = new Array(numIncorrect).fill(null)
   },
   methods: {
     submitPreferences() {
-      console.log('해설 선호 선택:', this.userPreferredExplanations)
+      // 1) GPT/Claude 선택 개수 계산
+      let gptCount = 0
+      let claudeCount = 0
+      this.userPreferredExplanations.forEach(choice => {
+        if (choice === 'gpt') gptCount++
+        else if (choice === 'claude') claudeCount++
+      })
+
+      // 2) 현재 사용자 닉네임 (이미 로컬스토리지에 저장된 상태라고 가정)
+      const userName = localStorage.getItem('user') || 'Guest'
+
+      // 3) localStorage에서 rankData 로드
+      const stored = localStorage.getItem('rankData')
+      if (stored) {
+        let data = JSON.parse(stored)
+        const reversed = [...data].reverse()
+        const found = reversed.find(item => item.name === userName)
+        
+        if (found) {
+          const realIndex = data.indexOf(found)
+          
+          // gptCount, claudeCount 누적
+          data[realIndex].gptCount = (data[realIndex].gptCount || 0) + gptCount
+          data[realIndex].claudeCount = (data[realIndex].claudeCount || 0) + claudeCount
+
+          // 업데이트된 배열 다시 저장
+          localStorage.setItem('rankData', JSON.stringify(data))
+        }
+      }
+
       alert('해설 선호 선택을 완료했습니다!')
-      // 필요하면 서버 전송, 다른 페이지 이동, etc.
     }
   }
 }
@@ -120,8 +139,6 @@ export default {
 <style scoped>
 .answer-wrapper {
   height: 80vh; 
-
-  /* 세로 스크롤 활성화 */
   overflow-y: auto; 
   background-color: #fff;
   width: 80%;
@@ -130,44 +147,45 @@ export default {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* 상단 타이틀 (해설) */
 .title {
-  font-size: 20px;
-  margin-bottom: 10px;
+  background-color: #ADCDC0;
+  margin-bottom: 17px;
+  font-size: 24px;
+  border-radius: 10px; /* Rounded corners */
+  padding: 10px 10px; /* Vertical and horizontal padding */
 }
 
-/* 점수 안내 문구 */
 .score-info {
   margin-bottom: 20px;
   font-size: 1.2em;
 }
 
-/* 흰색 박스 컨테이너 */
 .answer-container {
   width: 100%;
   background-color: #ffffff;
   display: inline-block;
   padding: 20px;
   border-radius: 8px;
-  text-align: left; /* 내부 컨텐츠는 왼쪽 정렬 */
+  text-align: left;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sub-title {
   margin-top: 0;
   margin-bottom: 20px;
-  text-align: center;
-}
+  background-color: #ADCDC0;
+  font-size: 24px;
+  border-radius: 10px; 
+  padding: 10px 10px; 
+} 
 
-/* 틀린 문제 하나하나 */
 .incorrect-item {
   margin-bottom: 30px;
 }
 
-/* 해설 2개를 옆으로 나란히 배치 */
 .explanations {
   display: flex;
-  flex-wrap: wrap; /* 화면이 좁으면 자동 줄바꿈 */
+  flex-wrap: wrap;
   gap: 20px;
   margin: 15px 0;
 }
@@ -179,7 +197,6 @@ export default {
   border-radius: 5px;
 }
 
-/* 라디오 버튼 그룹 */
 .radio-group {
   margin-top: 10px;
   display: flex;
@@ -197,7 +214,6 @@ export default {
   cursor: pointer;
 }
 
-/* 모든 문제 정답일 때 */
 .all-correct {
   background-color: #ffffff;
   padding: 30px;
