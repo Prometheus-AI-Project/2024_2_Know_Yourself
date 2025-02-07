@@ -1,4 +1,3 @@
-<!-- src/views/WelcomePage.vue -->
 <template>
     <div class="welcome-container">
       <div>
