@@ -333,14 +333,11 @@ YOLO는 컴퓨터 비전 분야의 기술로, 자연어 처리와는 관련이 �
 따라서 답은 1번 '망각 게이트'입니다.`
           }
         ],
-        // 현재 문제 번호(0 ~ 6)
         currentQuestionIndex: 0,
-        // 사용자가 고른 답안 저장용 배열 (null이면 아직 안 고름)
         userAnswers: []
       }
     },
     created() {
-    // questions 개수만큼 userAnswers를 null로 초기화
     this.userAnswers = new Array(this.questions.length).fill(null)
   },
   computed: {
@@ -350,10 +347,9 @@ YOLO는 컴퓨터 비전 분야의 기술로, 자연어 처리와는 관련이 �
     currentQuestion() {
       return this.questions[this.currentQuestionIndex]
     },
-    // 진행도(%) 계산
     progressPercentage() {
       return ((this.currentQuestionIndex + 1) / this.totalQuestions) * 100
-    }
+    } //진행도
   },
   methods: {
     // 특정 보기 선택
@@ -366,7 +362,7 @@ YOLO는 컴퓨터 비전 분야의 기술로, 자연어 처리와는 관련이 �
         this.currentQuestionIndex++
       }
     },
-    // 제출(채점) -> MainLayout으로 결과를 emit
+    
     submitQuiz() {
       let correctCount = 0
       let incorrectList = []
@@ -388,7 +384,6 @@ YOLO는 컴퓨터 비전 분야의 기술로, 자연어 처리와는 관련이 �
         }
       })
 
-      // 예: 점수 = 맞힌 개수, 전체 문제 수
       const total = this.questions.length
       const result = {
         correctCount,
@@ -396,7 +391,6 @@ YOLO는 컴퓨터 비전 분야의 기술로, 자연어 처리와는 관련이 �
         incorrectList
       }
 
-      // MainLayout에 finishQuiz 이벤트로 전달
       this.$emit('finishQuiz', result)
     }
   }

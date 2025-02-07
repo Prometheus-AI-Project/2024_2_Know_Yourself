@@ -1,7 +1,6 @@
 <template>
   <div class="page-layout">
-    <!-- 사이드바 -->
-    <div class="sidebar">
+]    <div class="sidebar">
       <div>
         <div class="profile-section">
           <img src="/assets/profile.png" alt="Profile Picture" class="profile-img" />
@@ -23,11 +22,6 @@
 
     <!-- 우측 메인 콘텐츠 영역 -->
     <div class="content" id="content-area">
-      <!-- 
-        currentContent에 따라 TestPage, AnswerPage, RankingPage 중 하나를 표시.
-        :quizResult="quizResult" -> AnswerPage에 props로 전달
-        @finishQuiz -> TestPage에서 채점 후 결과를 이 레이아웃으로 전달받기
-      -->
       <component
         :is="currentContent"
         :quizResult="quizResult"
@@ -61,7 +55,6 @@ export default {
   methods: {
     // 사이드바에서 메뉴 클릭 시 페이지 전환
     changeContent(pageName) {
-      // pageName에 맞춰 currentContent를 변경
       if (pageName === 'test') {
         this.currentContent = 'TestPage'
       } else if (pageName === 'answer') {
@@ -74,13 +67,10 @@ export default {
     handleFinishQuiz(result) {
       // result: { correctCount, total, incorrectList } 등
       this.quizResult = result
-
       // 1) 정답률 계산
       const ratio = (result.correctCount / result.total) * 100
-
       // 2) 현재 사용자 닉네임
       const userName = this.userName // 이미 localStorage.getItem("user") 등으로 저장된 값
-
       // 3) localStorage에 "rankData"라는 키로 랭킹 목록을 누적
       const storedData = JSON.parse(localStorage.getItem("rankData")) || []
       storedData.push({
@@ -91,19 +81,12 @@ export default {
       })
       localStorage.setItem("rankData", JSON.stringify(storedData))
 
-      // 채점 후 AnswerPage로 이동
       this.currentContent = 'AnswerPage'
     },
-    // 로그아웃
     logout() {
       localStorage.removeItem("user")
-      // 메인 레이아웃의 상위(App.vue)에게 welcome 페이지로 바꿔달라고 요청
       this.$emit('changePage', 'welcome')
     }
   }
 }
 </script>
-
-<style scoped>
-/* 필요하다면 사이드바/레이아웃 스타일 */
-</style>
