@@ -32,7 +32,6 @@
         </div>
       </div>
 
-      <!-- 4위 이후 테이블 -->
       <div class="other-ranks">
         <h2>Others</h2>
         <table class="rank-table">
@@ -65,7 +64,6 @@
       </div>
     </div>
 
-    <!-- 오른쪽 GPT vs Claude 통계 섹션 -->
     <div class="ranking-right">
       <h2 class="titles">GPT vs Claude 응답 비교</h2>
       <p><strong>프롬프트: plan_and_solve </strong><br>(LLM 스스로 문제를 풀기 위한 계획을 세우게 하고, 해당 계획에 따라 문제를 풀도록 하는 프롬프트)</p>
@@ -73,7 +71,6 @@
       <hr />
       <div class="gpt-claude-stats">
         <br>
-        <!-- GPT 이미지 + 비율 -->
         <img src="/assets/gpt.png" alt="GPT" class="gpt-img" width="200px" />
         <p class="gpt-ratio">
           GPT 선호비율:
@@ -82,11 +79,8 @@
           </span>
           <span v-else>0%</span>
         </p>
-
-        <!-- 중앙 "VS" -->
         <div class="vs-text"> <br> VS <br> </div>
         <br>
-        <!-- Claude 이미지 + 비율 -->
         <img src="/assets/claude.svg" alt="Claude" class="claude-img" width="200px"/>
         <p class="claude-ratio">
           Claude 선호비율:
@@ -96,7 +90,6 @@
           <span v-else>0%</span>
         </p>
       </div>
-    <!-- 초기화 버튼 -->
     </div>
   </div>
 </template>
@@ -112,17 +105,14 @@ export default {
     }
   },
   computed: {
-    // 상위 3명 (인덱스 0,1,2)
     topThree() {
       return this.rankList.slice(0, 3)
     },
-    // 4등 이후
     others() {
       return this.rankList.slice(3)
     }
   },
   methods: {
-    // 메달 아이콘
     getMedalImage(index) {
       if (index === 0) return '/assets/gold.png'
       if (index === 1) return '/assets/silver.png'
@@ -136,13 +126,10 @@ export default {
     if (stored) {
       let data = JSON.parse(stored)
 
-      // 정답률 내림차순 정렬 (ratio가 없으면 0 처리)
       data.sort((a, b) => (b.ratio || 0) - (a.ratio || 0))
 
-      // 랭킹 리스트 저장
       this.rankList = data
 
-      // GPT/Claude 통계: 모든 사용자 gptCount/claudeCount 합
       let gptSum = 0
       let claudeSum = 0
       data.forEach(user => {

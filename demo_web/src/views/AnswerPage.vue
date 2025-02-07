@@ -9,7 +9,6 @@
     </div>
     <h2 class="sub-title">틀린 문제 해설</h2>
 
-    <!-- 틀린 문제 해설 + GPT/Claude 라디오 선택 -->
     <div v-if="quizResult.incorrectList.length > 0" class="answer-container">
       <div
         v-for="(item, idx) in quizResult.incorrectList"
@@ -32,7 +31,6 @@
           </div>
         </div>
 
-        <!-- 선호도 라디오 버튼 -->
         <div class="radio-group">
           <label>
             <input
@@ -59,8 +57,6 @@
         <button @click="submitPreferences">해설 선호 선택 완료</button>
       </div>
     </div>
-
-    <!-- 틀린 문제 없으면 -->
     <div v-else class="all-correct">
       <p>모든 문제를 맞추셨네요! 축하드립니다!</p>
     </div>
@@ -94,13 +90,11 @@ export default {
     }
   },
   created() {
-    // 틀린 문제 수만큼 라디오 버튼 선택값을 null로 초기화
     const numIncorrect = this.quizResult.incorrectList.length
     this.userPreferredExplanations = new Array(numIncorrect).fill(null)
   },
   methods: {
     submitPreferences() {
-      // 1) GPT/Claude 선택 개수 계산
       let gptCount = 0
       let claudeCount = 0
       this.userPreferredExplanations.forEach(choice => {
@@ -108,10 +102,8 @@ export default {
         else if (choice === 'claude') claudeCount++
       })
 
-      // 2) 현재 사용자 닉네임 (이미 로컬스토리지에 저장된 상태라고 가정)
       const userName = localStorage.getItem('user') || 'Guest'
 
-      // 3) localStorage에서 rankData 로드
       const stored = localStorage.getItem('rankData')
       if (stored) {
         let data = JSON.parse(stored)
@@ -121,11 +113,9 @@ export default {
         if (found) {
           const realIndex = data.indexOf(found)
           
-          // gptCount, claudeCount 누적
           data[realIndex].gptCount = (data[realIndex].gptCount || 0) + gptCount
           data[realIndex].claudeCount = (data[realIndex].claudeCount || 0) + claudeCount
 
-          // 업데이트된 배열 다시 저장
           localStorage.setItem('rankData', JSON.stringify(data))
         }
       }
@@ -151,8 +141,8 @@ export default {
   background-color: #ADCDC0;
   margin-bottom: 17px;
   font-size: 24px;
-  border-radius: 10px; /* Rounded corners */
-  padding: 10px 10px; /* Vertical and horizontal padding */
+  border-radius: 10px; 
+  padding: 10px 10px; 
 }
 
 .score-info {
