@@ -36,7 +36,7 @@ img {
 /* 사이드바 레이아웃 */
 .page-layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 /* 사이드바 */

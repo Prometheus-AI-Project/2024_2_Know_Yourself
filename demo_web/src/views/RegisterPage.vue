@@ -12,7 +12,7 @@
         <input type="text" v-model="nickname" placeholder="Nickname" required />
         
         <br /><br />
-        <button @click="goToTest">Next</button>
+        <button @click="goToTest">시험보러가기</button>
       </div>
     </div>
   </template>
