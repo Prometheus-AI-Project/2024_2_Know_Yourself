@@ -72,9 +72,26 @@ export default {
     },
     // TestPage에서 채점(제출) 완료 이벤트 수신
     handleFinishQuiz(result) {
-      // result 예: { score, correctCount, total, incorrectList: [...] }
+      // result: { correctCount, total, incorrectList } 등
       this.quizResult = result
-      // 채점 후 자동으로 AnswerPage로 전환
+
+      // 1) 정답률 계산
+      const ratio = (result.correctCount / result.total) * 100
+
+      // 2) 현재 사용자 닉네임
+      const userName = this.userName // 이미 localStorage.getItem("user") 등으로 저장된 값
+
+      // 3) localStorage에 "rankData"라는 키로 랭킹 목록을 누적
+      const storedData = JSON.parse(localStorage.getItem("rankData")) || []
+      storedData.push({
+        name: userName,
+        correctCount: result.correctCount,
+        total: result.total,
+        ratio: ratio
+      })
+      localStorage.setItem("rankData", JSON.stringify(storedData))
+
+      // 채점 후 AnswerPage로 이동
       this.currentContent = 'AnswerPage'
     },
     // 로그아웃
