@@ -1,0 +1,235 @@
+[
+    {
+      "name": "",
+      "correctCount": 0,
+      "total": 7,
+      "ratio": 0,
+      "gptCount": 2,
+      "claudeCount": 5
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 1,
+      "claudeCount": 0
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 1,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 0,
+      "claudeCount": 1
+    },
+    {
+      "name": "",
+      "correctCount": 2,
+      "total": 7,
+      "ratio": 28.57142857142857,
+      "gptCount": 0,
+      "claudeCount": 5
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 2,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 4,
+      "total": 7,
+      "ratio": 57.14285714285714,
+      "gptCount": 0,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 2,
+      "total": 7,
+      "ratio": 28.57142857142857,
+      "gptCount": 2,
+      "claudeCount": 8
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 0,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 1,
+      "total": 7,
+      "ratio": 14.285714285714285,
+      "gptCount": 0,
+      "claudeCount": 18
+    },
+    {
+      "name": "",
+      "correctCount": 2,
+      "total": 7,
+      "ratio": 28.57142857142857,
+      "gptCount": 2,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 1,
+      "claudeCount": 1
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 0,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 0,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 4,
+      "total": 7,
+      "ratio": 57.14285714285714,
+      "gptCount": 0,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 4,
+      "total": 7,
+      "ratio": 57.14285714285714,
+      "gptCount": 0,
+      "claudeCount": 3
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 0,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 0,
+      "claudeCount": 8
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 0,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 0,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 2,
+      "claudeCount": 2
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 0,
+      "claudeCount": 1
+    },
+    {
+      "name": "",
+      "correctCount": 5,
+      "total": 7,
+      "ratio": 71.42857142857143,
+      "gptCount": 0,
+      "claudeCount": 4
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 0,
+      "claudeCount": 1
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 1,
+      "claudeCount": 0
+    },
+    {
+      "name": "",
+      "correctCount": 6,
+      "total": 7,
+      "ratio": 85.71428571428571,
+      "gptCount": 0,
+      "claudeCount": 4
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 2,
+      "claudeCount": 6
+    },
+    {
+      "name": "회성승훈",
+      "correctCount": 4,
+      "total": 7,
+      "ratio": 57.14285714285714,
+      "gptCount": 2,
+      "claudeCount": 1
+    },
+    {
+      "name": "",
+      "correctCount": 3,
+      "total": 7,
+      "ratio": 42.857142857142854,
+      "gptCount": 1,
+      "claudeCount": 3
+    }
+  ]
+  
